@@ -1,13 +1,13 @@
 import streamlit as st
-import time
 import numpy as np
+import time
 import pandas as pd
 
-# Global Variables
+# Initialize Session State
 if "maze" not in st.session_state:
     st.session_state.maze = None
 if "position" not in st.session_state:
-    st.session_state.position = (0, 0)
+    st.session_state.position = (1, 1)
 if "start_time" not in st.session_state:
     st.session_state.start_time = None
 if "ranking" not in st.session_state:
@@ -16,35 +16,39 @@ if "ranking" not in st.session_state:
 # Generate Maze
 def generate_maze(size):
     maze = np.zeros((size, size))
-    maze[1:-1, 1:-1] = 1  # Create paths
-    maze[-2, -2] = 2  # Exit point
+    maze[1:-1, 1:-1] = 1  # Path
+    maze[1, 1] = 1  # Start
+    maze[-2, -2] = 2  # Goal
     return maze
 
 # Display Maze
 def display_maze(maze, position):
+    maze_display = []
     for row in range(maze.shape[0]):
+        row_display = ""
         for col in range(maze.shape[1]):
             if (row, col) == position:
-                st.write("🟦", end=" ")  # Player
+                row_display += "🟦 "  # Player
             elif maze[row, col] == 0:
-                st.write("⬛", end=" ")  # Wall
+                row_display += "⬛ "  # Wall
             elif maze[row, col] == 1:
-                st.write("⬜", end=" ")  # Path
+                row_display += "⬜ "  # Path
             elif maze[row, col] == 2:
-                st.write("🏁", end=" ")  # Exit
-        st.write("")
+                row_display += "🏁 "  # Goal
+        maze_display.append(row_display)
+    st.write("\n".join(maze_display))
 
-# Check if the player reaches the goal
+# Check Goal
 def is_goal_reached(position, maze):
     return maze[position] == 2
 
-# Initialize the game
+# Start Game
 def start_game():
     st.session_state.maze = generate_maze(10)
     st.session_state.position = (1, 1)
     st.session_state.start_time = time.time()
 
-# Game Control
+# Move Player
 def move(direction):
     row, col = st.session_state.position
     maze = st.session_state.maze
@@ -89,7 +93,7 @@ if st.session_state.maze is not None:
     if st.button("⬇️"):
         move("down")
 
-    # Check if goal is reached
+    # Check if Goal is Reached
     if is_goal_reached(st.session_state.position, st.session_state.maze):
         time_taken = time.time() - st.session_state.start_time
         st.success(f"🎉 You reached the goal in {time_taken:.2f} seconds!")
