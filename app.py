@@ -1,110 +1,123 @@
 import streamlit as st
 import numpy as np
+import matplotlib.pyplot as plt
+import random
 import time
-import pandas as pd
 
-# Initialize Session State
+# Initialize session state
 if "maze" not in st.session_state:
     st.session_state.maze = None
 if "position" not in st.session_state:
     st.session_state.position = (1, 1)
+if "goal" not in st.session_state:
+    st.session_state.goal = None
 if "start_time" not in st.session_state:
     st.session_state.start_time = None
-if "ranking" not in st.session_state:
-    st.session_state.ranking = pd.DataFrame(columns=["Nickname", "Time (s)"])
 
-# Generate Maze
-def generate_maze(size):
-    maze = np.zeros((size, size))
-    maze[1:-1, 1:-1] = 1  # Path
-    maze[1, 1] = 1  # Start
-    maze[-2, -2] = 2  # Goal
+# Generate maze using Prim's Algorithm
+def generate_maze(width, height):
+    maze = np.ones((height, width), dtype=int)  # Create grid full of walls
+    start = (1, 1)
+    maze[start] = 0  # Start point as path
+    walls = [(1, 2), (2, 1)]  # Walls adjacent to start
+
+    while walls:
+        wall = random.choice(walls)
+        walls.remove(wall)
+        x, y = wall
+
+        # Check neighbors
+        neighbors = []
+        if x > 1 and maze[x - 2, y] == 0:
+            neighbors.append((x - 2, y))
+        if x < height - 2 and maze[x + 2, y] == 0:
+            neighbors.append((x + 2, y))
+        if y > 1 and maze[x, y - 2] == 0:
+            neighbors.append((x, y - 2))
+        if y < width - 2 and maze[x, y + 2] == 0:
+            neighbors.append((x, y + 2))
+
+        if neighbors:
+            nx, ny = random.choice(neighbors)
+            maze[x, y] = 0
+            maze[(x + nx) // 2, (y + ny) // 2] = 0
+            maze[nx, ny] = 0
+
+            # Add new walls
+            if nx > 1 and maze[nx - 2, ny] == 1:
+                walls.append((nx - 1, ny))
+            if nx < height - 2 and maze[nx + 2, ny] == 1:
+                walls.append((nx + 1, ny))
+            if ny > 1 and maze[nx, ny - 2] == 1:
+                walls.append((nx, ny - 1))
+            if ny < width - 2 and maze[nx, ny + 2] == 1:
+                walls.append((nx, ny + 1))
+
     return maze
 
-# Display Maze
-def display_maze(maze, position):
-    maze_display = []
-    for row in range(maze.shape[0]):
-        row_display = ""
-        for col in range(maze.shape[1]):
-            if (row, col) == position:
-                row_display += "🟦 "  # Player
-            elif maze[row, col] == 0:
-                row_display += "⬛ "  # Wall
-            elif maze[row, col] == 1:
-                row_display += "⬜ "  # Path
-            elif maze[row, col] == 2:
-                row_display += "🏁 "  # Goal
-        maze_display.append(row_display)
-    st.write("\n".join(maze_display))
+# Display maze using matplotlib
+def display_maze(maze, position, goal):
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.imshow(maze, cmap="binary", origin="upper")
 
-# Check Goal
-def is_goal_reached(position, maze):
-    return maze[position] == 2
+    # Highlight player position
+    px, py = position
+    gx, gy = goal
+    ax.scatter(py, px, color="blue", s=100, label="Player")
+    ax.scatter(gy, gx, color="red", s=100, label="Goal")
+    ax.legend(loc="upper right")
+    ax.set_xticks([])
+    ax.set_yticks([])
+    st.pyplot(fig)
 
-# Start Game
+# Start the game
 def start_game():
-    st.session_state.maze = generate_maze(10)
-    st.session_state.position = (1, 1)
+    width, height = 21, 21  # Maze dimensions (odd numbers)
+    st.session_state.maze = generate_maze(width, height)
+    st.session_state.position = (1, 1)  # Start position
+    st.session_state.goal = (height - 2, width - 2)  # Goal position
     st.session_state.start_time = time.time()
 
-# Move Player
+# Move player
 def move(direction):
-    row, col = st.session_state.position
+    x, y = st.session_state.position
     maze = st.session_state.maze
 
-    if direction == "up" and row > 0 and maze[row - 1, col] != 0:
-        st.session_state.position = (row - 1, col)
-    elif direction == "down" and row < maze.shape[0] - 1 and maze[row + 1, col] != 0:
-        st.session_state.position = (row + 1, col)
-    elif direction == "left" and col > 0 and maze[row, col - 1] != 0:
-        st.session_state.position = (row, col - 1)
-    elif direction == "right" and col < maze.shape[1] - 1 and maze[row, col + 1] != 0:
-        st.session_state.position = (row, col + 1)
+    if direction == "up" and x > 0 and maze[x - 1, y] == 0:
+        st.session_state.position = (x - 1, y)
+    elif direction == "down" and x < maze.shape[0] - 1 and maze[x + 1, y] == 0:
+        st.session_state.position = (x + 1, y)
+    elif direction == "left" and y > 0 and maze[x, y - 1] == 0:
+        st.session_state.position = (x, y - 1)
+    elif direction == "right" and y < maze.shape[1] - 1 and maze[x, y + 1] == 0:
+        st.session_state.position = (x, y + 1)
 
-# Add to Ranking
-def add_to_ranking(nickname, time_taken):
-    new_entry = {"Nickname": nickname, "Time (s)": round(time_taken, 2)}
-    st.session_state.ranking = pd.concat([st.session_state.ranking, pd.DataFrame([new_entry])])
-    st.session_state.ranking = st.session_state.ranking.sort_values(by="Time (s)").reset_index(drop=True)
-
-# Main App
-st.title("Streamlit Maze Game")
-st.write("Use the buttons to navigate through the maze and reach the 🏁!")
+# Main app
+st.title("Maze Game")
+st.write("Navigate the maze and reach the goal!")
 
 if st.button("Start New Game"):
     start_game()
 
 if st.session_state.maze is not None:
-    st.write("### Maze")
-    display_maze(st.session_state.maze, st.session_state.position)
+    # Display the maze
+    display_maze(st.session_state.maze, st.session_state.position, st.session_state.goal)
 
-    # Controls
+    # Movement buttons
     col1, col2, col3 = st.columns(3)
     with col1:
-        if st.button("⬅️"):
+        if st.button("⬅️ Left"):
             move("left")
     with col2:
-        if st.button("⬆️"):
+        if st.button("⬆️ Up"):
             move("up")
+        if st.button("⬇️ Down"):
+            move("down")
     with col3:
-        if st.button("➡️"):
+        if st.button("➡️ Right"):
             move("right")
-    if st.button("⬇️"):
-        move("down")
 
-    # Check if Goal is Reached
-    if is_goal_reached(st.session_state.position, st.session_state.maze):
+    # Check if the player reached the goal
+    if st.session_state.position == st.session_state.goal:
         time_taken = time.time() - st.session_state.start_time
         st.success(f"🎉 You reached the goal in {time_taken:.2f} seconds!")
-        nickname = st.text_input("Enter your nickname to save your score:", key="nickname_input")
-        if st.button("Submit Score"):
-            if nickname:
-                add_to_ranking(nickname, time_taken)
-                st.write("Score saved!")
-            else:
-                st.warning("Please enter a nickname!")
-
-# Display Ranking
-st.write("### Leaderboard")
-st.dataframe(st.session_state.ranking)
