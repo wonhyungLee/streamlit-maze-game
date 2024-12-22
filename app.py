@@ -26,7 +26,7 @@ def generate_maze(width, height):
         walls.remove(wall)
         x, y = wall
 
-        # Check neighbors
+        # Check if wall separates two paths
         neighbors = []
         if x > 1 and maze[x - 2, y] == 0:
             neighbors.append((x - 2, y))
@@ -37,21 +37,20 @@ def generate_maze(width, height):
         if y < width - 2 and maze[x, y + 2] == 0:
             neighbors.append((x, y + 2))
 
-        if neighbors:
-            nx, ny = random.choice(neighbors)
-            maze[x, y] = 0
-            maze[(x + nx) // 2, (y + ny) // 2] = 0
-            maze[nx, ny] = 0
+        if len(neighbors) == 1:
+            maze[x, y] = 0  # Mark wall as path
+            nx, ny = neighbors[0]
+            maze[(x + nx) // 2, (y + ny) // 2] = 0  # Clear path between cells
 
-            # Add new walls
-            if nx > 1 and maze[nx - 2, ny] == 1:
-                walls.append((nx - 1, ny))
-            if nx < height - 2 and maze[nx + 2, ny] == 1:
-                walls.append((nx + 1, ny))
-            if ny > 1 and maze[nx, ny - 2] == 1:
-                walls.append((nx, ny - 1))
-            if ny < width - 2 and maze[nx, ny + 2] == 1:
-                walls.append((nx, ny + 1))
+            # Add new walls to list
+            if x > 1 and maze[x - 2, y] == 1:
+                walls.append((x - 1, y))
+            if x < height - 2 and maze[x + 2, y] == 1:
+                walls.append((x + 1, y))
+            if y > 1 and maze[x, y - 2] == 1:
+                walls.append((x, y - 1))
+            if y < width - 2 and maze[x, y + 2] == 1:
+                walls.append((x, y + 1))
 
     return maze
 
@@ -60,7 +59,7 @@ def display_maze(maze, position, goal):
     fig, ax = plt.subplots(figsize=(6, 6))
     ax.imshow(maze, cmap="binary", origin="upper")
 
-    # Highlight player position
+    # Highlight player position and goal
     px, py = position
     gx, gy = goal
     ax.scatter(py, px, color="blue", s=100, label="Player")
