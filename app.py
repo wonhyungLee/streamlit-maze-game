@@ -114,18 +114,25 @@ if st.session_state.maze is not None:
     # Display the maze
     display_maze(st.session_state.maze, st.session_state.position, st.session_state.goal)
 
-    # Directional buttons
+    # Directional buttons with custom layout
     col1, col2, col3 = st.columns(3)
     with col1:
-        if st.button("⬅️ Left"):
-            move_player("left")
+        st.write("")  # Empty space
     with col2:
-        if st.button("⬆️ Up"):
+        if st.button("⬆️"):
             move_player("up")
-        if st.button("⬇️ Down"):
-            move_player("down")
     with col3:
-        if st.button("➡️ Right"):
+        st.write("")  # Empty space
+
+    col4, col5, col6 = st.columns(3)
+    with col4:
+        if st.button("⬅️"):
+            move_player("left")
+    with col5:
+        if st.button("⬇️"):
+            move_player("down")
+    with col6:
+        if st.button("➡️"):
             move_player("right")
 
     # Check if player reached the goal
