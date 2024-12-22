@@ -115,20 +115,31 @@ if st.session_state.maze is not None:
     display_maze(st.session_state.maze, st.session_state.position, st.session_state.goal)
 
     # Directional buttons
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col1:
-        if st.button("⬅️ Left"):
-            move_player("left")
-    with col2:
-        up = st.button("⬆️ Up")
-        down = st.button("⬇️ Down")
-        if up:
-            move_player("up")
-        if down:
-            move_player("down")
-    with col3:
-        if st.button("➡️ Right"):
-            move_player("right")
+    st.markdown(
+        """
+        <style>
+        .direction-buttons {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            gap: 10px;
+            justify-content: center;
+        }
+        .direction-buttons button {
+            width: 80px;
+            height: 80px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        </style>
+        <div class="direction-buttons">
+            <button onclick="move('up')">⬆️</button>
+            <button onclick="move('left')">⬅️</button>
+            <button onclick="move('right')">➡️</button>
+            <button onclick="move('down')">⬇️</button>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # Check if player reached the goal
     if st.session_state.position == st.session_state.goal:
