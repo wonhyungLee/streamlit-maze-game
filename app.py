@@ -120,22 +120,23 @@ if st.session_state.maze is not None:
         <style>
         .direction-buttons {
             display: grid;
-            grid-template-columns: auto auto auto;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 10px;
-            justify-content: center;
+            justify-items: center;
         }
         .direction-buttons button {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             font-size: 18px;
-            font-weight: bold;
         }
         </style>
         <div class="direction-buttons">
+            <div></div>
             <button onclick="move('up')">⬆️</button>
+            <div></div>
             <button onclick="move('left')">⬅️</button>
-            <button onclick="move('right')">➡️</button>
             <button onclick="move('down')">⬇️</button>
+            <button onclick="move('right')">➡️</button>
         </div>
         """,
         unsafe_allow_html=True,
