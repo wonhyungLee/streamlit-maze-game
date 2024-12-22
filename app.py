@@ -2,8 +2,8 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import random
-import time
 import pandas as pd
+import time
 
 # Initialize session state
 if "maze" not in st.session_state:
@@ -97,6 +97,10 @@ def add_to_ranking(nickname, time_taken):
 st.title("Maze Game")
 st.write("Use the arrow buttons to navigate the maze and reach the goal!")
 
+# Sidebar for leaderboard
+st.sidebar.title("Leaderboard")
+st.sidebar.write(st.session_state.ranking)
+
 if not st.session_state.game_active:
     if st.button("Start New Game"):
         start_game()
@@ -110,15 +114,17 @@ if st.session_state.maze is not None:
     # Display the maze
     display_maze(st.session_state.maze, st.session_state.position, st.session_state.goal)
 
-    # Directional buttons for movement
-    col1, col2, col3 = st.columns(3)
+    # Directional buttons
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         if st.button("⬅️ Left"):
             move_player("left")
     with col2:
-        if st.button("⬆️ Up"):
+        up = st.button("⬆️ Up")
+        down = st.button("⬇️ Down")
+        if up:
             move_player("up")
-        if st.button("⬇️ Down"):
+        if down:
             move_player("down")
     with col3:
         if st.button("➡️ Right"):
@@ -131,7 +137,7 @@ if st.session_state.maze is not None:
         time_taken = time.time() - st.session_state.start_time
         st.success(f"🎉 You reached the goal in {time_taken:.2f} seconds!")
 
-# Leaderboard
+# Input for nickname after game ends
 if st.session_state.game_over:
     nickname = st.text_input("Enter your nickname:")
     if st.button("Submit Score"):
@@ -141,5 +147,3 @@ if st.session_state.game_over:
             st.write("Score saved!")
         else:
             st.warning("Please enter a nickname.")
-    st.write("### Leaderboard")
-    st.dataframe(st.session_state.ranking)
