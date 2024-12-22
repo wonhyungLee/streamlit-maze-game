@@ -115,32 +115,18 @@ if st.session_state.maze is not None:
     display_maze(st.session_state.maze, st.session_state.position, st.session_state.goal)
 
     # Directional buttons
-    st.markdown(
-        """
-        <style>
-        .direction-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            justify-items: center;
-        }
-        .direction-buttons button {
-            width: 60px;
-            height: 60px;
-            font-size: 18px;
-        }
-        </style>
-        <div class="direction-buttons">
-            <div></div>
-            <button onclick="move('up')">⬆️</button>
-            <div></div>
-            <button onclick="move('left')">⬅️</button>
-            <button onclick="move('down')">⬇️</button>
-            <button onclick="move('right')">➡️</button>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("⬅️ Left"):
+            move_player("left")
+    with col2:
+        if st.button("⬆️ Up"):
+            move_player("up")
+        if st.button("⬇️ Down"):
+            move_player("down")
+    with col3:
+        if st.button("➡️ Right"):
+            move_player("right")
 
     # Check if player reached the goal
     if st.session_state.position == st.session_state.goal:
