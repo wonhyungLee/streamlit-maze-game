@@ -14,8 +14,6 @@ if "goal" not in st.session_state:
     st.session_state.goal = None
 if "start_time" not in st.session_state:
     st.session_state.start_time = None
-if "current_time" not in st.session_state:
-    st.session_state.current_time = None
 if "ranking" not in st.session_state:
     st.session_state.ranking = pd.DataFrame(columns=["Nickname", "Time (s)"])
 if "game_active" not in st.session_state:
@@ -96,7 +94,8 @@ def add_to_ranking(nickname, time_taken):
     st.session_state.ranking = st.session_state.ranking.sort_values(by="Time (s)").reset_index(drop=True)
 
 # Main app
-st.title("Swipe & Keyboard Maze Game")
+st.title("Maze Game")
+st.write("Use the arrow buttons to navigate the maze and reach the goal!")
 
 if not st.session_state.game_active:
     if st.button("Start New Game"):
@@ -111,44 +110,19 @@ if st.session_state.maze is not None:
     # Display the maze
     display_maze(st.session_state.maze, st.session_state.position, st.session_state.goal)
 
-    # Handle Swipe & Keyboard Input
-    st.markdown("""
-        <script>
-        let touchstartX = 0
-        let touchstartY = 0
-        let touchendX = 0
-        let touchendY = 0
-
-        document.addEventListener('keydown', function(event) {
-            let direction = null;
-            if (event.key === "ArrowUp") direction = "up";
-            if (event.key === "ArrowDown") direction = "down";
-            if (event.key === "ArrowLeft") direction = "left";
-            if (event.key === "ArrowRight") direction = "right";
-            if (direction) {
-                fetch(`/move/${direction}`);
-            }
-        });
-
-        document.addEventListener('touchstart', function(event) {
-            touchstartX = event.changedTouches[0].screenX;
-            touchstartY = event.changedTouches[0].screenY;
-        });
-
-        document.addEventListener('touchend', function(event) {
-            touchendX = event.changedTouches[0].screenX;
-            touchendY = event.changedTouches[0].screenY;
-            let direction = null;
-            if (touchendX < touchstartX - 50) direction = "left";
-            if (touchendX > touchstartX + 50) direction = "right";
-            if (touchendY < touchstartY - 50) direction = "up";
-            if (touchendY > touchstartY + 50) direction = "down";
-            if (direction) {
-                fetch(`/move/${direction}`);
-            }
-        });
-        </script>
-    """, unsafe_allow_html=True)
+    # Directional buttons for movement
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("⬅️ Left"):
+            move_player("left")
+    with col2:
+        if st.button("⬆️ Up"):
+            move_player("up")
+        if st.button("⬇️ Down"):
+            move_player("down")
+    with col3:
+        if st.button("➡️ Right"):
+            move_player("right")
 
     # Check if player reached the goal
     if st.session_state.position == st.session_state.goal:
