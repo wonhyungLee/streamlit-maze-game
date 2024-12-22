@@ -109,7 +109,7 @@ st.write("Navigate the maze and reach the goal!")
 if st.button("Start New Game"):
     start_game()
 
-if st.session_state.maze is not None:
+if st.session_state.maze is not None and st.session_state.start_time is not None:
     # Timer Banner
     if not st.session_state.game_over:
         elapsed_time = time.time() - st.session_state.start_time
@@ -118,8 +118,21 @@ if st.session_state.maze is not None:
     # Display the maze
     display_maze(st.session_state.maze, st.session_state.position, st.session_state.goal)
 
-    # Keyboard or Touch Input
-    st.markdown("### **Use Arrow Keys (PC) or Swipe (Mobile)**")
+    # Handle Keyboard Input (for PC users)
+    st.markdown("""
+        <script>
+        document.addEventListener("keydown", function(event) {
+            let action = null;
+            if (event.key === "ArrowUp") action = "up";
+            if (event.key === "ArrowDown") action = "down";
+            if (event.key === "ArrowLeft") action = "left";
+            if (event.key === "ArrowRight") action = "right";
+            if (action) {
+                fetch("/move/" + action);
+            }
+        });
+        </script>
+    """, unsafe_allow_html=True)
 
     # Check if the player reached the goal
     if st.session_state.position == st.session_state.goal and not st.session_state.game_over:
